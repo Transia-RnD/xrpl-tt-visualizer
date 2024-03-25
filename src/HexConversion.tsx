@@ -239,7 +239,8 @@ function addToMacroDict(field: string, type: string, offset: number): any {
   if (approveList.includes(field) && !nonApproveList.includes(field)) {
     return {
       name: abbreviateCamelCase(field),
-      offset: offset + additionalOffset(field, type)
+      offset: offset + additionalOffset(field, type),
+      arg: `${camelToSnake(field)}`
     }
   }
 }
@@ -263,6 +264,61 @@ function additionalOffset(field: string, type: string): any {
       return 2;
     default:
       return 2;
+  }
+}
+
+const omitList = [
+  'Fee',
+  'EmitDetails',
+  'FirstLedgerSequence',
+  'LastLedgerSequence',
+  'Flags',
+]
+
+const float48 = (type_out: string, type: string, currency: string, issuer: string, amount: string) => {
+  return `    float_sto(${type_out}, 49, ${currency}, 20, ${issuer}, 20, ${amount}, sf${type}); \\ \n`
+}
+
+function camelToSnake(str: string): string {
+  return str.replace(/([A-Z])/g, (match) => `${match.toLowerCase()}`);
+}
+
+function getAdditionalArgs(field:string, flags: number): any {
+  switch (field) {
+    case 'Account':
+      return ['account_buffer']
+    case 'LimitAmount':
+      return ['currency_buffer', 'issuer_buffer', 'amount_xfl']
+    case 'TakerGets':
+      if (flags === 1) {
+        return ['xah_xfl']
+      }
+      return ['currency_buffer', 'issuer_buffer', 'amount_xfl']
+    case 'TakerPays':
+      if (flags === 0) {
+        return ['xah_xfl']
+      }
+      return ['currency_buffer', 'issuer_buffer', 'amount_xfl']
+    default:
+      return null;
+  }
+}
+
+console.log(getAdditionalArgs('TakerPays', 0));
+
+
+function parseApiType(out: string, field:string): any {
+  switch (field) {
+    case 'Account':
+      return `    ACCOUNT_TO_BUF(${out}, account_buffer); \\ \n`
+    case 'LimitAmount':
+      return float48(out, field, 'currency_buffer', 'issuer_buffer', 'amount_xfl')
+    case 'TakerGets':
+      return float48(out, field, 'currency_buffer', 'issuer_buffer', 'amount_xfl')
+    case 'TakerPays':
+      return float48(out, field, 'currency_buffer', 'issuer_buffer', 'amount_xfl')
+    default:
+      return null;
   }
 }
 
@@ -329,6 +385,65 @@ const HexConversion: React.FC = () => {
       const value = macroDict[key]
       text += `#define ${value.name} (txn + ${value.offset}U) \n`
     })
+
+    const args: any = {}
+    Object.keys(macroDict).forEach((key) => {
+      if (!omitList.includes(key)) {
+        args[key] = macroDict[key]
+      }
+    })
+
+    console.log(args);
+    
+    
+    text += "\n"
+    text += "\n"
+    text += "#define PREPARE_TXN(currency_buf, issuer_buf, amount_xfl) do { \\ \n"
+
+    // reserve
+    text += "    etxn_reserve(1); \\ \n"
+
+    // fls
+    text += "    uint32_t fls = (uint32_t)ledger_seq() + 1; \\ \n"
+    text += "    *((uint32_t *)(FLS_OUT)) = FLIP_ENDIAN(fls); \\ \n"
+
+    // lls
+    text += "    uint32_t lls = fls + 4; \\ \n"
+    text += "    *((uint32_t *)(LLS_OUT)) = FLIP_ENDIAN(lls); \\ \n"
+
+    Object.keys(args).forEach((key: string) => {
+      text += parseApiType(args[key].name, key)
+    })
+
+    // emit
+    text += "    etxn_details(EMIT_OUT, 116U); \\ \n"
+    // fee
+    text += "    int64_t fee = etxn_fee_base(SBUF(txn)); \\ \n"
+    text += "    uint8_t *b = FEE_OUT; \\ \n"
+    text += "    *b++ = 0b01000000 + ((fee >> 56) & 0b00111111); \\ \n"
+    text += "    *b++ = (fee >> 48) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 40) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 32) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 24) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 16) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 8) & 0xFFU; \\ \n"
+    text += "    *b++ = (fee >> 0) & 0xFFU; \\ \n"
+    text += "    TRACEHEX(txn); \\ \n"
+    text += "} while(0) \n"
+
+    text += "\n"
+    text += "\n"
+
+    text += "/* \n"
+    text += "uint8_t currency_buffer [20]; \n"
+    text += "uint8_t issuer_buffer [20]; \n"
+    text += "uint64_t amount_xfl = ??; \n"
+    text += "PREPARE_TXN(currency_buf, issuer_buf, amount_xfl); \n"
+    text += "\n"
+    text += "uint8_t emithash[32]; \n"
+    text += "int64_t emit_result = emit(SBUF(emithash), SBUF(txn)); \n"
+    text += "*/ \n"
+
     setHexOutput(text)
   };
 
