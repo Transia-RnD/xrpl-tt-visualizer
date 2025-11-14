@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/xrpl-tt-visualizer/static/css/main.d504ff0a.css",
-    "main.js": "/xrpl-tt-visualizer/static/js/main.a32466e7.js",
-    "static/js/496.f932e76f.chunk.js": "/xrpl-tt-visualizer/static/js/496.f932e76f.chunk.js",
+    "main.js": "/xrpl-tt-visualizer/static/js/main.1944f2cb.js",
+    "static/js/496.f0a0e267.chunk.js": "/xrpl-tt-visualizer/static/js/496.f0a0e267.chunk.js",
     "index.html": "/xrpl-tt-visualizer/index.html",
     "main.d504ff0a.css.map": "/xrpl-tt-visualizer/static/css/main.d504ff0a.css.map",
-    "main.a32466e7.js.map": "/xrpl-tt-visualizer/static/js/main.a32466e7.js.map",
-    "496.f932e76f.chunk.js.map": "/xrpl-tt-visualizer/static/js/496.f932e76f.chunk.js.map"
+    "main.1944f2cb.js.map": "/xrpl-tt-visualizer/static/js/main.1944f2cb.js.map",
+    "496.f0a0e267.chunk.js.map": "/xrpl-tt-visualizer/static/js/496.f0a0e267.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.d504ff0a.css",
-    "static/js/main.a32466e7.js"
+    "static/js/main.1944f2cb.js"
   ]
 }
