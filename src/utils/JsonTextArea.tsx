@@ -18,23 +18,14 @@ const JsonTextArea = ({ onConvert }: JsonTextAreaProps) => {
         throw Error('Empty Json Object')
       }
       setIsValidJson(true);
+      onConvert(value)
     } catch (error) {
       setIsValidJson(false);
     }
   };
 
-  const handleSubmit = (event: any) => {
-    event.preventDefault();
-    if (isValidJson) {
-      // Handle the submission of valid JSON data
-      onConvert(jsonText)
-    } else {
-    //   alert('The JSON is invalid. Please correct it before submitting.');
-    }
-  };
-
   return (
-    <form onSubmit={handleSubmit}>
+    <form>
       <textarea
         value={jsonText}
         onChange={handleJsonChange}
@@ -43,12 +34,9 @@ const JsonTextArea = ({ onConvert }: JsonTextAreaProps) => {
         cols={100}
         style={{ fontFamily: 'monospace' }}
       />
-      <div>
+      <div style={{ margin: '8px' }}>
         {jsonText && !isValidJson && <span style={{ color: 'red' }}>Invalid JSON format!</span>}
       </div>
-      <button type="submit" disabled={!isValidJson}>
-        Convert to Hook Tx
-      </button>
     </form>
   );
 };
