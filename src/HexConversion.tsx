@@ -360,7 +360,7 @@ const HexConversion: React.FC = () => {
     byteTotal += emitTotal
     
     let text = ""
-    text += "// clang-format off \n"
+    text += "// clang-format off\n"
     text += `uint8_t txn[${byteTotal}] =\n`
     text += "{\n"
     text += "/* size,upto */\n"
@@ -395,54 +395,57 @@ const HexConversion: React.FC = () => {
 
     console.log(args);
     
+    const br = "\n"
     
-    text += "\n"
-    text += "\n"
-    text += "#define PREPARE_TXN(currency_buf, issuer_buf, amount_xfl) do { \\ \n"
+    text += br
+    text += br
+    text += "// clang-format off" + br
+    text += "#define PREPARE_TXN(currency_buf, issuer_buf, amount_xfl) do { \\" + br
 
     // reserve
-    text += "    etxn_reserve(1); \\ \n"
+    text += "    etxn_reserve(1); \\" + br
 
     // fls
-    text += "    uint32_t fls = (uint32_t)ledger_seq() + 1; \\ \n"
-    text += "    *((uint32_t *)(FLS_OUT)) = FLIP_ENDIAN(fls); \\ \n"
+    text += "    uint32_t fls = (uint32_t)ledger_seq() + 1; \\" + br
+    text += "    *((uint32_t *)(FLS_OUT)) = FLIP_ENDIAN(fls); \\" + br
 
     // lls
-    text += "    uint32_t lls = fls + 4; \\ \n"
-    text += "    *((uint32_t *)(LLS_OUT)) = FLIP_ENDIAN(lls); \\ \n"
+    text += "    uint32_t lls = fls + 4; \\" + br
+    text += "    *((uint32_t *)(LLS_OUT)) = FLIP_ENDIAN(lls); \\" + br
 
     Object.keys(args).forEach((key: string) => {
       text += parseApiType(args[key].name, key)
     })
 
     // emit
-    text += "    etxn_details(EMIT_OUT, 116U); \\ \n"
+    text += "    etxn_details(EMIT_OUT, 116U); \\" + br
     // fee
-    text += "    int64_t fee = etxn_fee_base(SBUF(txn)); \\ \n"
-    text += "    uint8_t *b = FEE_OUT; \\ \n"
-    text += "    *b++ = 0b01000000 + ((fee >> 56) & 0b00111111); \\ \n"
-    text += "    *b++ = (fee >> 48) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 40) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 32) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 24) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 16) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 8) & 0xFFU; \\ \n"
-    text += "    *b++ = (fee >> 0) & 0xFFU; \\ \n"
-    text += "    TRACEHEX(txn); \\ \n"
-    text += "} while(0) \n"
+    text += "    int64_t fee = etxn_fee_base(SBUF(txn)); \\" + br
+    text += "    uint8_t *b = FEE_OUT; \\" + br
+    text += "    *b++ = 0b01000000 + ((fee >> 56) & 0b00111111); \\" + br
+    text += "    *b++ = (fee >> 48) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 40) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 32) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 24) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 16) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 8) & 0xFFU; \\" + br
+    text += "    *b++ = (fee >> 0) & 0xFFU; \\" + br
+    text += "    TRACEHEX(txn); \\" + br
+    text += "} while(0) \\" + br
+    text += "// clang-format on" + br
 
-    text += "\n"
-    text += "\n"
+    text += br
+    text += br
 
-    text += "/* \n"
-    text += "uint8_t currency_buffer [20]; \n"
-    text += "uint8_t issuer_buffer [20]; \n"
-    text += "uint64_t amount_xfl = ??; \n"
-    text += "PREPARE_TXN(currency_buf, issuer_buf, amount_xfl); \n"
-    text += "\n"
-    text += "uint8_t emithash[32]; \n"
-    text += "int64_t emit_result = emit(SBUF(emithash), SBUF(txn)); \n"
-    text += "*/ \n"
+    text += "/*" + br
+    text += "uint8_t currency_buffer [20];" + br
+    text += "uint8_t issuer_buffer [20];" + br
+    text += "uint64_t amount_xfl = ??;" + br
+    text += "PREPARE_TXN(currency_buf, issuer_buf, amount_xfl);" + br
+    text += br
+    text += "uint8_t emithash[32];" + br
+    text += "int64_t emit_result = emit(SBUF(emithash), SBUF(txn));" + br
+    text += "*/" + br
 
     setHexOutput(text)
   };
